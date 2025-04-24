@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Olympics Data Visualisation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #3498db;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>7CCSMSDV Data Visualisation Coursework 2025</h1>
+    <h3>Ali Khawaja</h3>
+    <p>Email: <a href="mailto:K24060561@kcl.ac.uk">K24060561@kcl.ac.uk</a></p>
+    <h2>Introduction</h2>
+    <p>This project explores Olympic medal data in relation to GDP, aiming to uncover patterns in country performance over time. It uses data from the Kaggle, World Bank, and the Maddison Project, combined with D3.js for an interactive visualisation.</p>
+
+    <h2>Implementation Overview</h2>
+    <p>This visualisation investigates how Olympic medal success relates to a country’s economic scale. It presents an interactive choropleth map showing a log-scaled Medal Performance Score (MPS) for each country per Olympic year. The aim is to highlight countries that perform exceptionally relative to their size and resources, and those that underperform.</p>
+    <p>Data prior to 1950 was excluded due to incomplete GDP coverage, especially for developing and transitional economies. This ensures reliable comparisons based on consistently available economic indicators.</p>
+
+    <h2>Data Preprocessing and Cleaning</h2>
+    <p>The original  
+    <a href="https://www.kaggle.com/datasets/stefanydeoliveira/summer-olympics-medals-1896-2024" target="_blank">Olympic dataset</a>
+    contained inconsistencies in country representation. Country names were primarily listed under the "Team" field, and NOC codes did not always follow 
+    <a href="https://www.iso.org/iso-3166-country-codes.html" target="_blank">ISO standards</a>. To resolve this:</p>
+    <ul>
+      <li>Country names were first matched against entries in the <a href="https://simplemaps.com/data/world-cities" target="_blank">world cities</a> dataset.</li>
+      <li>If a match failed, a custom alias mapping was used.</li>
+    </ul>
+    <p>This process produced a cleaned dataset with consistent ISO codes, forming the basis of the analysis and visualisation. Transitional regions like the USSR and East Germany were retained if GDP data was available.</p>
+
+    <h2>Dataset Sources</h2>
+    <ul>
+      <li><strong>Olympic Medal Data:</strong> <a href="https://www.kaggle.com/datasets/stefanydeoliveira/summer-olympics-medals-1896-2024" target="_blank">Olympics dataset</a></li>
+      <li><strong>ISO Matching:</strong> <a href="https://simplemaps.com/data/world-cities" target="_blank">World cities dataset</a></li>
+      <li><strong>GDP Data:</strong> Merged from <a href="https://data.worldbank.org/" target="_blank">World Bank</a> and </li>
+      <li><strong>GDP Conversion:</strong> World Bank GDP (2017 USD) was converted to 2011 USD using a PPP factor of 0.533 <a href="https://data.worldbank.org/indicator/PA.NUS.PPP?year=2011" target="_blank">(PPP Conversion Factor)</a></li>
+    </ul>
+    <p>All participating countries were retained in the dataset even if they earned zero medals in a given year. This ensured the visualisation reflected both participation and performance.</p>
+
+    <h2>Medal Performance Score Formula</h2>
+    <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px;">
+      <p style="font-size: 20px; font-family: 'Courier New', monospace;">
+        MPS = Total Medals  ÷ GDP per Capita
+      </p>
+      <ul style="margin-top: 10px; font-size: 16px;">
+        <li>This score adjusts medal counts based on a country's economic scale, providing a normalized view of Olympic performance.</li>
+        <li>To compress extreme values and support choropleth encoding, the final score was transformed using a base-10 logarithm.</li>
+      </ul>
+    </div>
+
+    <div style="text-align: center;">
+      <button onclick="window.location.href='q2.html'">Go to Visualisation</button>
+    </div>
+  </div>
+</body>
+</html>

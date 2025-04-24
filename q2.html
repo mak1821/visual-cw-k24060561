@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medal Performance by Country</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4.0.0/dist/d3-geo-projection.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .header-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            margin: 20px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+        #choroplethMap, #scatterPlot {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: visible;
+        }
+        .tooltip {
+            position: absolute;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 14px;
+        }
+        .slider-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .year-display {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        h4 {
+            color: #666;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: normal;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .legend {
+            padding: 10px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .quadrant-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .quadrant-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .quadrant-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+
+        #countryPopup {
+        position: fixed;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        padding: 20px;
+        z-index: 1000;
+        max-width: 360px;
+        width: 90%;
+        }
+        #popupClose {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        }
+        #medalBreakdown {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        font-size: 14px;
+        }
+        #medalBreakdown div {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        }
+        .gold-medal { color: #FFD700; }
+        .silver-medal { color: #C0C0C0; }
+        .bronze-medal { color: #CD7F32; }
+        #playToggle {
+        font-size: 16px;
+        padding: 6px 12px;
+        min-height: 32px;
+        line-height: 1;
+        cursor: pointer;
+        }
+        .visually-hidden {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        }
+        .visually-hidden {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div id="ariaTooltip" aria-live="polite" class="visually-hidden"></div>
+    <div class="header-container">
+        <h1>Olympic Medal Performance by GDP</h1>
+        <h4>Explore how countries have performed in the Olympics from 1950 to 2020, using a medal efficiency score based on GDP per capita. The map reveals which nations achieve the most with the least.</h4>
+    </div>
+
+    <div class="slider-container">
+        <div class="year-display">Year: <span id="currentYear">2020</span></div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="playToggle">▶</button>
+            <label for="yearSlider" class="visually-hidden">Year</label>
+            <input type="range" min="1950" max="2020" value="2020" class="slider" id="yearSlider">
+            
+          </div>
+    </div>
+    <div class="chart-container">
+        <div id="choroplethMap"></div>
+    </div>
+
+    <div id="countryPopup" style="display: none;">
+        <div id="popupContent">
+          <button id="popupClose">×</button>
+          <h2 id="popupYearHeading">Statistics for 2020</h3>
+          <h3 id="popupTitle">Country</h2>
+          <p id="popupRanks"></p>
+          <p id="popupGDP"></p>
+          <div id="medalBreakdown">
+            <div><span class="medal gold-medal">🥇</span><span id="goldCount"></span> Gold</div>
+            <div><span class="medal silver-medal">🥈</span><span id="silverCount"></span> Silver</div>
+            <div><span class="medal bronze-medal">🥉</span><span id="bronzeCount"></span> Bronze</div>
+          </div>
+          <svg id="popupChart" width="300" height="100"></svg>
+        </div>
+      </div>
+    <script src="q2.js"></script>
+    <div class="source-container" style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
+        <p>Data Sources: <a href="https://www.kaggle.com/datasets/stefanydeoliveira/summer-olympics-medals-1896-2024" target="_blank">Olympics Data</a>, <a href="https://data.worldbank.org/" target="_blank">World Bank GDP Data</a>, <a href="https://www.rug.nl/ggdc/historicaldevelopment/maddison/releases/maddison-project-database-2023" target="_blank">Maddison Project Database 2023</a>.</p>
+    </div>
+</body>
+</html> 
